@@ -13,5 +13,7 @@ buildNumber.properties
 # Eclipse m2e generated files
 # Eclipse Core
 .project
+.DS_Store
+.vscode
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
