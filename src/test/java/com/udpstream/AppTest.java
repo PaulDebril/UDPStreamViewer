@@ -1,4 +1,4 @@
-package com.example;
+package com.udpstream;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
