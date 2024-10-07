@@ -7,6 +7,7 @@ UDPStreamViewer is a Java Swing application designed to receive and display real
 - **Dynamic Live Streaming**: The application continuously updates to display the live video feed as it receives images from the UDP stream.
 - **Configurable IP and Port**: Users can configure the listening IP address and port number directly within the interface to match the UDP stream source.
 - **Logging**: Server activity and image updates are logged to provide feedback and assist with debugging.
+- **Image Packet Combining**: The application includes a system that can reassemble fragmented image data transmitted over multiple UDP packets, combining them into a complete image.
 - **Test Module**: A separate test module is available for testing image sending functionality over UDP.
 
 ## Project Structure
@@ -26,7 +27,7 @@ UDPStreamViewer is a Java Swing application designed to receive and display real
 
 ## Prerequisites
 
-- **Java 11** or later
+- **Java 17** or later
 - **Maven** installed
 
 ## Installation and Usage
