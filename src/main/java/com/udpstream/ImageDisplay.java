@@ -19,7 +19,7 @@ public class ImageDisplay {
     private JButton toggleServerButton;
     private JTextArea logArea;
     private UdpReceiver udpReceiver;
-    private boolean isServerRunning = false; // Indique si le serveur est en cours d'exécution
+    private boolean isServerRunning = false; 
 
     public ImageDisplay() {
         frame = new JFrame("UDP Image Viewer");
@@ -33,7 +33,7 @@ public class ImageDisplay {
         imagePanel.setBackground(Color.LIGHT_GRAY); 
 
         JPanel containerPanel = new JPanel(new BorderLayout());
-        containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); 
+        containerPanel.setBorder(BorderFactory.createEmptyBorder(50, 20, 50, 20)); 
         containerPanel.add(imagePanel, BorderLayout.CENTER);
 
         label = new JLabel();
@@ -43,7 +43,7 @@ public class ImageDisplay {
 
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setPreferredSize(new Dimension(640, 720));
-        rightPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); 
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 50, 20)); 
 
         JLabel titleLabel = new JLabel("UDP Image Viewer");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
@@ -54,12 +54,12 @@ public class ImageDisplay {
         configPanel.setBorder(BorderFactory.createTitledBorder("Configuration"));
 
         JLabel ipLabel = new JLabel("Adresse IP:");
-        ipField = new JTextField("127.0.0.1"); // IP par défaut
+        ipField = new JTextField("127.0.0.1");
         configPanel.add(ipLabel);
         configPanel.add(ipField);
 
         JLabel portLabel = new JLabel("Port:");
-        portField = new JTextField("3630"); // Port par défaut
+        portField = new JTextField("3630");
         configPanel.add(portLabel);
         configPanel.add(portField);
 
@@ -90,7 +90,6 @@ public class ImageDisplay {
 
         frame.setVisible(true);
 
-        // Action du bouton pour démarrer ou arrêter le serveur
         toggleServerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -121,35 +120,31 @@ public class ImageDisplay {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
         String timestamp = formatter.format(new Date());
 
-        // Ajouter le timestamp avant le message
         logArea.append("[" + timestamp + "] " + message + "\n");
-        logArea.setCaretPosition(logArea.getDocument().getLength()); // Scroll automatiquement vers le bas
+        logArea.setCaretPosition(logArea.getDocument().getLength());
     }
 
     public void updateImage(byte[] imageData) {
         SwingUtilities.invokeLater(() -> {
             try (ByteArrayInputStream bais = new ByteArrayInputStream(imageData)) {
-                // Convertir les données d'image en BufferedImage
+                
                 BufferedImage image = ImageIO.read(bais);
                 if (image != null) {
-                    // Calculer une mise à l'échelle tout en conservant le ratio
+                    
                     int originalWidth = image.getWidth();
                     int originalHeight = image.getHeight();
                     double aspectRatio = (double) originalWidth / originalHeight;
     
-                    // Définir la nouvelle taille d'image à la largeur de 640 pixels (largeur de l'affichage)
+                    
                     int newWidth = 640;
                     int newHeight = (int) (newWidth / aspectRatio);
     
-                    // Si la hauteur dépasse 720 pixels, ajuster l'échelle en fonction de la hauteur
+                
                     if (newHeight > 720) {
                         newHeight = 720;
                         newWidth = (int) (newHeight * aspectRatio);
                     }
-    
-                    // Mise à l'échelle de l'image
                     Image scaledImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-                    // Mise à jour de l'image dans le JLabel
                     label.setIcon(new ImageIcon(scaledImage));
                     label.repaint();
                 } else {

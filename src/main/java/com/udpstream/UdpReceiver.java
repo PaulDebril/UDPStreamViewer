@@ -6,7 +6,7 @@ import java.net.SocketException;
 import java.io.ByteArrayOutputStream;
 
 public class UdpReceiver extends Thread {
-    private static final int MAX_PACKET_SIZE = 65467;
+    private static final int MAX_PACKET_SIZE = 65507;
     private int port;
     private ImageDisplay imageDisplay;
     private DatagramSocket socket;
@@ -46,7 +46,6 @@ public class UdpReceiver extends Thread {
                         baos.write(remainingData);
 
                         if (--expectedTotalPackets == 0) {
-                            System.out.println("All packets received for current image.");
                             break;
                         }
                     }
@@ -55,9 +54,8 @@ public class UdpReceiver extends Thread {
                     imageDisplay.updateImage(imageData);
                 } catch (SocketException e) {
                     if (running) {
-                        e.printStackTrace(); // Si le serveur tourne encore, on affiche l'erreur
+                        e.printStackTrace();
                     } else {
-                        // Si le socket est fermé par arrêt normal, on ne fait rien.
                         imageDisplay.logMessage("Socket fermé proprement.");
                     }
                 }
