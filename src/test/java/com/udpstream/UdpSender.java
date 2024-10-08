@@ -82,10 +82,9 @@ public class UdpSender extends JFrame {
                         DatagramSocket socket = new DatagramSocket();
 
                         List<Path> imagePaths = Files.list(Paths.get(folderPath))
-                                .filter(Files::isRegularFile)
-                                .filter(path -> path.toString().matches(".*frame a\\d+\\..*"))
-                                .sorted((p1, p2) -> extractImageNumber(p1) - extractImageNumber(p2))
-                                .collect(Collectors.toList());
+                        .filter(Files::isRegularFile)
+                        .sorted((p1, p2) -> p1.getFileName().toString().compareTo(p2.getFileName().toString()))
+                        .collect(Collectors.toList());
 
                         if (imagePaths.isEmpty()) {
                             JOptionPane.showMessageDialog(null, "Aucune image trouvée dans le dossier", "Erreur", JOptionPane.ERROR_MESSAGE);
