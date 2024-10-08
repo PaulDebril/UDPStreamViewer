@@ -12,8 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class UdpSender extends JFrame {
@@ -21,6 +19,7 @@ public class UdpSender extends JFrame {
     private JTextField ipField;
     private JTextField portField;
     private JTextField folderField;
+    private JTextField fpsField;
     private JButton startButton;
     private JButton stopButton;
     private boolean isRunning = false;
@@ -28,12 +27,12 @@ public class UdpSender extends JFrame {
 
     public UdpSender() {
         setTitle("UDP Image Sender");
-        setSize(400, 200);
+        setSize(400, 250);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Layout
-        setLayout(new GridLayout(5, 2));
+        setLayout(new GridLayout(6, 2));
 
         // IP input
         add(new JLabel("IP Address:"));
@@ -49,6 +48,11 @@ public class UdpSender extends JFrame {
         add(new JLabel("Images Folder:"));
         folderField = new JTextField("");
         add(folderField);
+
+        // FPS input
+        add(new JLabel("FPS:"));
+        fpsField = new JTextField("30");
+        add(fpsField);
 
         // Start button
         startButton = new JButton("Démarrer l'envoi");
@@ -75,17 +79,16 @@ public class UdpSender extends JFrame {
                         String serverIp = ipField.getText();
                         int serverPort = Integer.parseInt(portField.getText());
                         String folderPath = folderField.getText();
-                        int fps = 30;
+                        int fps = Integer.parseInt(fpsField.getText());
                         final long DELAY_BETWEEN_FRAMES = 1000 / fps;
 
                         InetAddress serverAddress = InetAddress.getByName(serverIp);
                         DatagramSocket socket = new DatagramSocket();
 
                         List<Path> imagePaths = Files.list(Paths.get(folderPath))
-                                .filter(Files::isRegularFile)
-                                .filter(path -> path.toString().matches(".*frame a\\d+\\..*"))
-                                .sorted((p1, p2) -> extractImageNumber(p1) - extractImageNumber(p2))
-                                .collect(Collectors.toList());
+                        .filter(Files::isRegularFile)
+                        .sorted((p1, p2) -> p1.getFileName().toString().compareTo(p2.getFileName().toString()))
+                        .collect(Collectors.toList());
 
                         if (imagePaths.isEmpty()) {
                             JOptionPane.showMessageDialog(null, "Aucune image trouvée dans le dossier", "Erreur", JOptionPane.ERROR_MESSAGE);
@@ -144,16 +147,6 @@ public class UdpSender extends JFrame {
                 senderThread.interrupt();
             }
         }
-    }
-
-    private int extractImageNumber(Path path) {
-        String fileName = path.getFileName().toString();
-        Pattern pattern = Pattern.compile("frame a(\\d+)");
-        Matcher matcher = pattern.matcher(fileName);
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-        return -1;
     }
 
     public static void main(String[] args) {
