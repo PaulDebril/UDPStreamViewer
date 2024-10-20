@@ -11,6 +11,8 @@ public class UdpReceiver extends Thread {
     private ImageDisplay imageDisplay;
     private DatagramSocket socket;
     private boolean running;
+    private int imageCount = 0; // Counter for received images
+    private long lastUpdateTime = System.currentTimeMillis(); // Last time the IPS was updated
 
     // Constructor to initialize the UdpReceiver with the specified port and ImageDisplay instance
     public UdpReceiver(int port, ImageDisplay imageDisplay) {
@@ -56,6 +58,19 @@ public class UdpReceiver extends Thread {
 
                     byte[] imageData = baos.toByteArray(); // Convert the assembled data to a byte array
                     imageDisplay.updateImage(imageData); // Update the displayed image
+
+                    // Increment the image count
+                    imageCount++;
+
+                    // Update IPS every 3 seconds
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - lastUpdateTime >= 1000) {
+                        int ips = (int) (imageCount / 1.0); // Calculate IPS
+                        imageDisplay.updateIPS(ips); // Update the IPS display in the UI
+                        imageCount = 0; // Reset the image count
+                        lastUpdateTime = currentTime; // Reset the last update time
+                    }
+
                 } catch (SocketException e) {
                     // Handle socket closure during shutdown
                     if (running) {

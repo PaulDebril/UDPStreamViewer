@@ -19,6 +19,8 @@ public class ImageDisplay {
     private JTextField portField;
     private JButton toggleServerButton;
     private JTextArea logArea;
+    private JLabel ipsValue;
+    private JLabel imageSizeValue;
     private UdpReceiver udpReceiver;
     private boolean isServerRunning = false; 
 
@@ -41,11 +43,11 @@ public class ImageDisplay {
 
         // Label to display the image
         label = new JLabel();
-        label.setHorizontalAlignment(JLabel.CENTER); // Center the image horizontally
-        label.setVerticalAlignment(JLabel.CENTER);   // Center the image vertically
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setVerticalAlignment(JLabel.CENTER); 
         imagePanel.add(label, BorderLayout.CENTER);  
 
-        // Right panel - Configuration and logs
+        // Right panel - Configuration, information, and logs
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setPreferredSize(new Dimension(640, 720));
         rightPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 50, 20)); // Padding for the right panel
@@ -77,11 +79,29 @@ public class ImageDisplay {
         configPanel.add(new JLabel()); // Empty label for spacing
         configPanel.add(toggleServerButton);
 
-        rightPanel.add(configPanel, BorderLayout.CENTER);
+        rightPanel.add(configPanel, BorderLayout.NORTH);
+
+        // Information panel for IPS and Image Size
+        JPanel infoPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        infoPanel.setBorder(BorderFactory.createTitledBorder("Information"));
+
+        // IPS label and field
+        JLabel ipsLabel = new JLabel("IPS:");
+        ipsValue = new JLabel("0");
+        infoPanel.add(ipsLabel);
+        infoPanel.add(ipsValue);
+
+        // Image Size label and field
+        JLabel imageSizeLabel = new JLabel("Image size:");
+        imageSizeValue = new JLabel("0 x 0");
+        infoPanel.add(imageSizeLabel);
+        infoPanel.add(imageSizeValue);
+
+        rightPanel.add(infoPanel, BorderLayout.CENTER);
 
         // Log panel to display server logs
         JPanel logPanel = new JPanel(new BorderLayout());
-        logPanel.setPreferredSize(new Dimension(640, 360));
+        logPanel.setPreferredSize(new Dimension(640, 240));
 
         // Title label for the log panel
         JLabel logTitle = new JLabel("Logs");
@@ -91,16 +111,16 @@ public class ImageDisplay {
 
         // Text area to display log messages
         logArea = new JTextArea();
-        logArea.setEditable(false); // Logs should not be editable by the user
+        logArea.setEditable(false);
         JScrollPane logScrollPane = new JScrollPane(logArea);
         logPanel.add(logScrollPane, BorderLayout.CENTER);
 
         rightPanel.add(logPanel, BorderLayout.SOUTH);
 
         // Set up the main frame layout
-        frame.setLayout(new GridLayout(1, 2)); // Two columns: left for image, right for configuration and logs
-        frame.add(containerPanel); 
-        frame.add(rightPanel);     
+        frame.setLayout(new GridLayout(1, 2)); // Two columns: left for image, right for configuration, information, and logs
+        frame.add(containerPanel);
+        frame.add(rightPanel);
 
         frame.setVisible(true);
 
@@ -137,8 +157,16 @@ public class ImageDisplay {
         String timestamp = formatter.format(new Date());
 
         logArea.append("[" + timestamp + "] " + message + "\n");
-        logArea.setCaretPosition(logArea.getDocument().getLength()); // Auto-scroll to the latest log message
+        logArea.setCaretPosition(logArea.getDocument().getLength());
     }
+
+    // Method to update the IPS display
+    public void updateIPS(int ips) {
+        SwingUtilities.invokeLater(() -> {
+            ipsValue.setText(String.valueOf(ips));
+        });
+    }
+
 
     // Method to update the displayed image
     public void updateImage(byte[] imageData) {
@@ -147,9 +175,12 @@ public class ImageDisplay {
                 // Read the image from the byte array
                 BufferedImage image = ImageIO.read(bais);
                 if (image != null) {
-                    // Calculate the aspect ratio to maintain the original proportions
+                    // Update image size information
                     int originalWidth = image.getWidth();
                     int originalHeight = image.getHeight();
+                    imageSizeValue.setText(originalWidth + " x " + originalHeight);
+
+                    // Calculate the aspect ratio to maintain the original proportions
                     double aspectRatio = (double) originalWidth / originalHeight;
     
                     // Set new dimensions for the scaled image
