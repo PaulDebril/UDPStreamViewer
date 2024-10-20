@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 public class UdpSender extends JFrame {
 
     private JTextField ipField;
@@ -80,6 +83,10 @@ public class UdpSender extends JFrame {
                         int serverPort = Integer.parseInt(portField.getText());
                         String folderPath = folderField.getText();
                         int fps = Integer.parseInt(fpsField.getText());
+                        if (fps > 60) {
+                            fps = 60;
+                        }
+                        
                         final long DELAY_BETWEEN_FRAMES = 1000 / fps;
 
                         InetAddress serverAddress = InetAddress.getByName(serverIp);
@@ -87,7 +94,7 @@ public class UdpSender extends JFrame {
 
                         List<Path> imagePaths = Files.list(Paths.get(folderPath))
                         .filter(Files::isRegularFile)
-                        .sorted((p1, p2) -> p1.getFileName().toString().compareTo(p2.getFileName().toString()))
+                        .sorted((p1, p2) -> Integer.compare(extractNumber(p1.getFileName().toString()), extractNumber(p2.getFileName().toString())))
                         .collect(Collectors.toList());
 
                         if (imagePaths.isEmpty()) {
@@ -147,6 +154,15 @@ public class UdpSender extends JFrame {
                 senderThread.interrupt();
             }
         }
+    }
+
+    private static int extractNumber(String fileName) {
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(fileName);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group());
+        }
+        return 0; // Si aucun numéro n'est trouvé, retourner 0 (ou ajuster selon le besoin)
     }
 
     public static void main(String[] args) {
