@@ -1,12 +1,17 @@
 package com.udpstream;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -25,13 +30,15 @@ public class ImageDisplay {
     private JLabel serverStatus; // Added label for server status
     private boolean isServerRunning = false; 
     private JLabel bandwidthValue; // Label to show network usage
+    private JSlider qualitySlider; // Add a slider for image quality
+
 
 
     // Constructor to set up the UI components and event listeners
     public ImageDisplay() {
         frame = new JFrame("UDP Image Viewer");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1280, 720);
+        frame.setSize(1280, 1080);
 
         // Left part - Image display
         imagePanel = new JPanel(new BorderLayout());
@@ -62,7 +69,7 @@ public class ImageDisplay {
         rightPanel.add(titleLabel, BorderLayout.NORTH);
 
         // Configuration panel for IP and port
-        JPanel configPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        JPanel configPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         configPanel.setBorder(BorderFactory.createTitledBorder("Configuration")); // Title border for configuration section
 
         // IP address label and text field
@@ -87,6 +94,16 @@ public class ImageDisplay {
         configPanel.add(new JLabel("Server Status:"));
         configPanel.add(serverStatus);
 
+        // Inside the constructor of ImageDisplay
+        qualitySlider = new JSlider(0, 100, 75); // Range from 0 to 100, default at 75
+        qualitySlider.setMajorTickSpacing(25);
+        qualitySlider.setMinorTickSpacing(5);
+        qualitySlider.setPaintTicks(true);
+        qualitySlider.setPaintLabels(true);
+
+        JLabel qualityLabel = new JLabel("Image Quality:");
+        configPanel.add(qualityLabel);
+        configPanel.add(qualitySlider);
 
         rightPanel.add(configPanel, BorderLayout.NORTH);
 
@@ -193,40 +210,72 @@ public class ImageDisplay {
     }
     
     // Method to update the displayed image
+    // Inside updateImage method
     public void updateImage(byte[] imageData) {
         SwingUtilities.invokeLater(() -> {
             try (ByteArrayInputStream bais = new ByteArrayInputStream(imageData)) {
-                // Read the image from the byte array
                 BufferedImage image = ImageIO.read(bais);
                 if (image != null) {
+                    // Get the compression quality from the slider
+                    int quality = qualitySlider.getValue();
+
+                    // Compress the image based on quality setting
+                    BufferedImage compressedImage = compressImage(image, quality);
+
                     // Update image size information
-                    int originalWidth = image.getWidth();
-                    int originalHeight = image.getHeight();
+                    int originalWidth = compressedImage.getWidth();
+                    int originalHeight = compressedImage.getHeight();
                     imageSizeValue.setText(originalWidth + " x " + originalHeight);
 
-                    // Calculate the aspect ratio to maintain the original proportions
+                    // Calculate aspect ratio and resize
                     double aspectRatio = (double) originalWidth / originalHeight;
-    
-                    // Set new dimensions for the scaled image
                     int newWidth = 640;
                     int newHeight = (int) (newWidth / aspectRatio);
-    
-                    // Ensure the height does not exceed the panel height
+
                     if (newHeight > 720) {
                         newHeight = 720;
                         newWidth = (int) (newHeight * aspectRatio);
                     }
-                    // Scale the image smoothly
-                    Image scaledImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+
+                    Image scaledImage = compressedImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
                     label.setIcon(new ImageIcon(scaledImage));
                     label.repaint();
                 } else {
                     logMessage("Failed to read image.");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 logMessage("Error updating image: " + e.getMessage());
             }
         });
     }
+
+    // Method to compress the image based on quality
+    private BufferedImage compressImage(BufferedImage image, int quality) {
+        try {
+            // Create a ByteArrayOutputStream to hold the compressed image data
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            
+            // Get a JPEG ImageWriter
+            ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+            ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+            writer.setOutput(ios);
+
+            // Set the compression quality
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality / 100.0f); // Quality from 0.0 to 1.0
+
+            // Write the compressed image
+            writer.write(null, new IIOImage(image, null, null), param);
+
+            // Convert compressed image back to BufferedImage
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            return ImageIO.read(bais);
+        } catch (Exception e) {
+            logMessage("Error compressing image: " + e.getMessage());
+            return image; // Return the original image in case of failure
+        }
+    }
+
+
 }
