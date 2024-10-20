@@ -9,6 +9,7 @@ UDPStreamViewer is a Java Swing application designed to receive and display real
 - **Logging**: Server activity and image updates are logged to provide feedback and assist with debugging.
 - **Image Packet Combining**: The application includes a system that can reassemble fragmented image data transmitted over multiple UDP packets, combining them into a complete image.
 - **Test Module**: A separate test module is available for testing image sending functionality over UDP.
+<img width="1273" alt="image" src="https://github.com/user-attachments/assets/b7f9487c-79eb-468b-9954-5b864c9788dc">
 
 ## Project Structure
 
@@ -57,11 +58,22 @@ UDPStreamViewer is a Java Swing application designed to receive and display real
 
 ## Running Tests
 
-To run the test cases for the project, use the following Maven command:
+To test the image streaming functionality, there is a sender application available. This application allows you to send images over UDP to your receiver application for testing purposes.
 
-```bash
-mvn test
-```
+### UDP Image Sender
+
+The "UDP Image Sender" provides a graphical interface (as shown in the image) where you can configure the IP address, port, the folder containing the images, and the frames per second (FPS) to send. Use this tool to test the receiver by sending image data over UDP.
+
+
+<img width="401" alt="image" src="https://github.com/user-attachments/assets/6096088c-3ae8-4554-8007-87c2451d62d2">
+
+#### Configuration:
+- **IP Address**: Specify the IP address of the machine where the receiver is running.
+- **Port**: Specify the port on which the receiver listens for incoming data.
+- **Images Folder**: Provide the folder path containing the images to be sent.
+- **FPS**: Define the number of frames per second for the transmission.
+
+Once configured, click on "Démarrer l'envoi" to start sending images. You can stop the transmission at any time using the "Arrêter" button.
 
 ## License
 
