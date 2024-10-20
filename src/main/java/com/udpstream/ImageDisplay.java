@@ -22,6 +22,7 @@ public class ImageDisplay {
     private JLabel ipsValue;
     private JLabel imageSizeValue;
     private UdpReceiver udpReceiver;
+    private JLabel serverStatus; // Added label for server status
     private boolean isServerRunning = false; 
 
     // Constructor to set up the UI components and event listeners
@@ -78,6 +79,12 @@ public class ImageDisplay {
         toggleServerButton = new JButton("Start Server");
         configPanel.add(new JLabel()); // Empty label for spacing
         configPanel.add(toggleServerButton);
+        // Server Status Label
+        serverStatus = new JLabel("Status: Stopped");
+        serverStatus.setForeground(Color.RED); // Initially set to red (Stopped)
+        configPanel.add(new JLabel("Server Status:"));
+        configPanel.add(serverStatus);
+
 
         rightPanel.add(configPanel, BorderLayout.NORTH);
 
@@ -135,20 +142,24 @@ public class ImageDisplay {
                         logMessage("Server stopped.");
                     }
                     toggleServerButton.setText("Start Server");
+                    serverStatus.setText("Status: Stopped");
+                    serverStatus.setForeground(Color.RED); // Set status to red when stopped
                     isServerRunning = false;
                 } else {
                     // Start the server
                     String ip = ipField.getText();
                     int port = Integer.parseInt(portField.getText());
                     logMessage("Starting server on IP " + ip + " and port " + port);
-
+        
                     udpReceiver = new UdpReceiver(port, ImageDisplay.this);
                     udpReceiver.start();
                     toggleServerButton.setText("Stop Server");
+                    serverStatus.setText("Status: Running");
+                    serverStatus.setForeground(Color.BLUE); // Set status to green when running
                     isServerRunning = true;
                 }
             }
-        });
+        });        
     }
 
     // Method to log messages to the log area
