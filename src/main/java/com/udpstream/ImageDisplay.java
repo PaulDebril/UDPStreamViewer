@@ -24,6 +24,8 @@ public class ImageDisplay {
     private UdpReceiver udpReceiver;
     private JLabel serverStatus; // Added label for server status
     private boolean isServerRunning = false; 
+    private JLabel bandwidthValue; // Label to show network usage
+
 
     // Constructor to set up the UI components and event listeners
     public ImageDisplay() {
@@ -89,7 +91,7 @@ public class ImageDisplay {
         rightPanel.add(configPanel, BorderLayout.NORTH);
 
         // Information panel for IPS and Image Size
-        JPanel infoPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        JPanel infoPanel = new JPanel(new GridLayout(3, 2, 10, 10));
         infoPanel.setBorder(BorderFactory.createTitledBorder("Information"));
 
         // IPS label and field
@@ -103,6 +105,11 @@ public class ImageDisplay {
         imageSizeValue = new JLabel("0 x 0");
         infoPanel.add(imageSizeLabel);
         infoPanel.add(imageSizeValue);
+
+        JLabel bandwidthLabel = new JLabel("Network usage (KB/s):");
+        bandwidthValue = new JLabel("0");
+        infoPanel.add(bandwidthLabel);
+        infoPanel.add(bandwidthValue);
 
         rightPanel.add(infoPanel, BorderLayout.CENTER);
 
@@ -179,6 +186,12 @@ public class ImageDisplay {
     }
 
 
+    public void updateBandwidth(double bandwidthKBps) {
+        SwingUtilities.invokeLater(() -> {
+            bandwidthValue.setText(String.format("%.2f KB/s", bandwidthKBps)); // Update the label with formatted bandwidth value
+        });
+    }
+    
     // Method to update the displayed image
     public void updateImage(byte[] imageData) {
         SwingUtilities.invokeLater(() -> {

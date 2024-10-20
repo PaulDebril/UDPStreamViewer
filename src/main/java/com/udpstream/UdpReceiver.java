@@ -13,6 +13,9 @@ public class UdpReceiver extends Thread {
     private boolean running;
     private int imageCount = 0; // Counter for received images
     private long lastUpdateTime = System.currentTimeMillis(); // Last time the IPS was updated
+    private long totalBytesReceived = 0; // Total bytes received
+    private long lastBandwidthUpdateTime = System.currentTimeMillis(); // Last time bandwidth was updated
+
 
     // Constructor to initialize the UdpReceiver with the specified port and ImageDisplay instance
     public UdpReceiver(int port, ImageDisplay imageDisplay) {
@@ -39,6 +42,18 @@ public class UdpReceiver extends Thread {
 
                         byte[] packetData = receivePacket.getData();
                         int packetLength = receivePacket.getLength();
+                        totalBytesReceived += packetLength; // Update the total bytes received
+
+                        // Calculate bandwidth usage every second
+                        long currentTime = System.currentTimeMillis();
+                        if (currentTime - lastBandwidthUpdateTime >= 1000) {
+                            double bandwidthKBps = (totalBytesReceived / 1024.0); // Convert to KB per second
+                            imageDisplay.updateBandwidth(bandwidthKBps); // Update the UI with the bandwidth usage
+                            totalBytesReceived = 0; // Reset the counter for the next second
+                            lastBandwidthUpdateTime = currentTime; // Reset the timer
+                        }
+
+                        
 
                         // Determine the total number of packets if not already set
                         if (expectedTotalPackets == -1) {
